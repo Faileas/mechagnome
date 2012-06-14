@@ -10,6 +10,11 @@ import time
 import thread
 import urllib2
 try:
+    from bs4 import BeautifulSoup
+except:
+    print "mechaGnome requires BeautifulSoup 4.+"
+    raise
+try:
     import GeoIP
 except:
     pass
@@ -49,9 +54,9 @@ class Commands(object):
             for twit in results:
                 this.respond(twit, args.copy())
         
-
     def tTwit(this, args):
         this.tTwitter(args)
+        
     def cGrep(this,args):
         this.respond(" ".join(args[3:]),args)
 
@@ -87,9 +92,7 @@ class Commands(object):
         line += " of ram."
         output.close()
         this.respond(line,args)
-#        this.sinBot.actions.execcommand('PRIVMSG '+args.chan+' :'+line,args)
-        # cat /proc/meminfo | grep MemTotal | sed -e "s/^.*:[\t ]*//g"
-        # cat /proc/cpuinfo | grep "model name" | sed -e "s/^.*:[\t ]*//g"
+        
     def cSystemuptime(this, args):
         #"""Syntax: 'systemuptime' - gives the uptime of sinbot's current host"""
         return
@@ -99,8 +102,6 @@ class Commands(object):
         line = output.readline().strip()
         output.close()
         this.respond(line,args)
-
-    
 
     def cWall(this, args):
         """Syntax: 'wall <phrase>' - send out <phrase> along with the name of every member in the channel"""
@@ -152,8 +153,6 @@ class Commands(object):
                     if len(buffer) == 0:
                         for searchWord in args[3:]:
                             searchWord = searchWord.replace('"',"")
-#                            print "searching for: "+word
-#                            print "in: "+q
                             if tmpQ.lower().find(searchWord.lower()) < 0:
                                 found = False
                     if found:
@@ -222,10 +221,7 @@ class Commands(object):
         """Syntax: 'imdb <movie name>' - get a summary of <movie name>"""
         user = args[0]
         chan = args[2]
-
-
         title = " ".join(args[3:])
-
         title = unicode(title, this.in_encoding, 'replace')
         try:
             # Do the search, and get the results (a list of Movie objects).
@@ -233,7 +229,6 @@ class Commands(object):
         except imdb.IMDbError, e:
             print "Probably you're not connected to Internet.  Complete error report:"
             print e
-
         # Print the results.
         print '    %s result%s for "%s":' % (len(results),
                             ('', 's')[len(results) != 1],
@@ -256,9 +251,7 @@ class Commands(object):
         if not hasattr(this.sinBot, "geoip") or this.sinBot.geoip is None:
             this.sinBot.geoip = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat",GeoIP.GEOIP_STANDARD)
         geoip = this.sinBot.geoip
-        
         gir = geoip.record_by_name(address)
-    
         return gir        
 
     # takes a GeoIP result from geoLocate()
@@ -311,8 +304,6 @@ class Commands(object):
         else: 
             this.respond("I'm sorry "+args[0]+" I don't know what you want me to do.", args)
             return
-        #print addr
-        #this.respond("You are connected from: " + addr, args)
         resp = None
         if addr is not None:
             gir = this.geoLocate(addr)
@@ -478,36 +469,8 @@ class Commands(object):
 
     def tReload(this, args):
         """Syntax: 'reload classes' - reloads my actions and commands. Use only when my code has been updated. """
-#        """Syntax: 'reload [foods|select|yousaid|bag of holding]' - reload the commands and actions library for sinBot, or just a specific web resource. does not require sinbot to restart"""
-#        print "Reload: "+args[3].lower()
-        # if len(args) > 3 and args[3].lower().startswith("food"):
-            # this.readFoods()
-        # elif len(args) > 3 and args[3].lower().startswith("select"):
-            # this.readSelect()
-        # elif len(args) > 3 and args[3].lower().startswith("release"):
-            # this.readRelease()
-        # elif len(args) > 3 and args[3].lower().startswith("when"):
-            # this.readWhen()
-        # elif len(args) > 3 and args[3].lower().startswith("h8ball"):
-            # this.readH8ball()
-        # elif len(args) > 3 and args[3].lower().startswith("yousaid"):
-            # this.readYouSaid()
-        # elif len(args) > 3 and args[3].lower().startswith("acronym"):
-            # this.readAcronyms()
         if len(args) > 3 and args[3].lower().startswith("bushisms"):
             this.readBushisms()
-        #elif len(args) > 3 and args[3].lower().startswith("bash"):
-        #    this.readBashquotes()
-        # elif len(args) > 3 and args[3].lower().startswith("bag"):
-            # this.readBagOfHolding()
-        #elif len(args) > 3 and args[3].lower().startswith("pastebin"):
-        #    this.getRootSinBot().pastebinThread.exit()
-        #    this.getRootSinBot().registerMap['pastebin-interval'] = 10
-        #    this.getRootSinBot().pastebinThread = thread.start_new_thread(this.pastebinLoop,())
-        # elif len(args) > 3 and args[3].lower().startswith("phoneme"):
-            # reload(sys.modules.get("phoneme"))
-            # from phoneme import *
-            # this.sinBot.phonemeMap = phonemeMap
         elif len(args) > 3 and args[3].lower().startswith("proxies"):
             urllib2.ProxyHandler(this.sinBot.proxies)
         elif len(args) > 3 and args[3].lower().startswith("classes"):
@@ -535,16 +498,6 @@ class Commands(object):
             sb = sb.parent
         return sb
 
-    #def cNames(this, args):
-    #    if (len(args) > 3):
-    #        if this.sinBot.userList.has_key(args[3]):
-    #            this.sinBot.userList[args[3]] = []
-    #        this.sinBot.actions.execcommand('NAMES '+args[3],args)
-    #        
-    #    else:
-    #        this.sinBot.actions.execcommand('NAMES',args)
-        
-
     def cDisemvowel(this, args):
         """Syntax: 'disemvowel <word or phrase>' - remove the vowels from <word or phrase>"""
         text = " ".join(args[3:]).replace('a','').replace('e','').replace('i','').replace('o','').replace('u','').replace('y','').replace('A','').replace('E','').replace('I','').replace('O','').replace('U','').replace('Y','')
@@ -555,8 +508,6 @@ class Commands(object):
 
     def cEat(this, args):
         """Syntax: 'eat <word or phrase>' - makes me eat something"""
-        #what = " ".join(args[3:]).lower().replace(chr(1),"").replace(" your","his").replace(" my","your").replace(" me "," you ")
-        #this.sinBot.actions.execcommand('PRIVMSG '+args[2]+' :'+chr(1)+'ACTION eats '+what+chr(1),args)
         this.responseActions("eats", args)
         randomEvent = random.random()
         print "Random! %f" % randomEvent
@@ -567,8 +518,6 @@ class Commands(object):
 
     def cDrink(this, args):
         """Syntax: 'drink <word or phrase>' - makes me drink something"""
-        #what = " ".join(args[3:]).lower().replace("your","his").replace("my","your").replace("me","you")
-        #this.sinBot.actions.execcommand('PRIVMSG '+args[2]+' :'+chr(1)+'ACTION drinks '+what+chr(1),args)
         this.responseActions("drink", args)
 
     def cBe(this, args):
@@ -602,20 +551,6 @@ class Commands(object):
             print "tTrace exception! ",e
             this.respond("Sorry, couldn't find any info on that number", args);
 
-#    def cOpall(this, args):
-#        """Syntax: 'opall [everywhere]' - op everyone in the channel, or optionally in every channel I am in"""
-#        chan = args[2]
-#        if len(args) >= 4 and ( args[3].lower().startswith("every") or args[3].lower().startswith("all") ):
-#            chanList = this.sinBot.userList.keys()
-#        else:
-#            chanList = [args[2]]
-#        for chan in chanList:
-#            for nick in this.sinBot.userList[chan]:
-#                print "OPALL, list: ",this.sinBot.userList[chan]
-#                if nick[0] != "@":
-#                    print "opping: "+nick
-#                    this.sinBot.actions.execcommand('MODE '+chan+' +o '+nick+'\n',args)
-
     def cWhose(this, args):
         this.cWho(args)
 
@@ -639,7 +574,6 @@ class Commands(object):
             return
         this.sinBot.actions.execcommand('PRIVMSG '+chan+' :'+name,args)
 
-
     def cOp(this, args):
 #        """Syntax: 'op <user>' - give <user> ops in the current channel"""
         if len(args) > 3:
@@ -656,21 +590,12 @@ class Commands(object):
 #        """Syntax: 'deop <user>' - take <user> ops away in the current channel"""
         this.sinBot.actions.execcommand('MODE '+args[2]+' -o '+args[3]+'\n',args)
 
-#    def cMsgall(this,args):
-#        """Syntax: 'msgall <message>' - sends a message to everyone on the *entire* server - only avail. to IRC OPs"""
-#        #:mboyd!mboyd@cary.nc.opsware.com PRIVMSG sinBot :test"""
-#        if args[1].split("@")[1] == "cary.nc.opsware.com":
-#            print "msgall from "+args[0]
-#            this.sinBot.actions.execcommand('PRIVMSG $$irc.nccs.opsware.com :'+" ".join(args[3:])+'\n',args)
-
-
     def cJoin(this,args):
         for x in args[3:]:
             if x[0] == '@':
                 x = x[1:]
             this.sinBot.actions.execcommand('OJOIN @'+x+'\n',args)
             this.sinBot.actions.execcommand('JOIN '+x+'\n',args)
-
 
     def cStatus(this,args):
         """Syntax: 'status' - gives the uptime and last reload of sinBot"""
@@ -790,8 +715,6 @@ class Commands(object):
     def cVersion(this,args):
         """Syntax: 'version' - info about the current version of mechaGnome"""
         this.sinBot.actions.execcommand('PRIVMSG '+args["chan"]+' :'+ this.sinBot.VERSION,args)
-        #this.sinBot.actions.execcommand('PRIVMSG '+args["chan"]+' :Version info: Actions version: '+this.VERSION+' Commands version: '+this.sinBot.commands.VERSION+' - featuring: threading, piping, automatic replication if in too many channels',args)
-
 
     def cAdd(this,args):
         #"""Syntax: 'add <food|yousaid|select|acronym|weapon> <info>' - add the object to sinbot's repertoire, not persisted"""
@@ -869,8 +792,6 @@ class Commands(object):
                 list = []
                 this.sinBot.bagOfHoldingPrep[args[4].upper()] = list
             list.append(acr)
-
-
 
     def cDebug(this,args):
         doPrint = args[3].lower() == "print"
@@ -1010,7 +931,6 @@ class Commands(object):
             retVal += newWord + "ay"+word[i:]+" "
         this.sinBot.actions.execcommand('PRIVMSG '+args[2]+' :'+retVal, args)
 
-
     def cMorse(this, args):
         """Syntax: 'morse <string>' - translate the string to/from morse"""
         message = " ".join(args[3:])
@@ -1045,15 +965,11 @@ class Commands(object):
             phrases = args[3:5]
         res1 = this.getGoogle(phrases[0])
         res2 = this.getGoogle(phrases[1])
-#        results = this.getGooglefight(phrases[0], phrases[1])
-#        if int(results[0]["score"].replace(",","")) > int(results[1]["score"].replace(",","")):
         if res1["result_count"] > res2["result_count"]:
 #            winner = results[0]["word"]
             winner = phrases[0]
         else:
             winner = phrases[1]
-#            winner = results[1]["word"]
-#        this.sinBot.actions.execcommand('PRIVMSG '+args[2]+' :'+results[0]["word"]+": "+results[0]["score"]+"    "+results[1]["word"]+": "+results[1]["score"]+" - "+winner+" FTW!", args)
         this.sinBot.actions.execcommand('PRIVMSG '+args[2]+' :'+phrases[0]+": "+str(res1["result_count"])+"    "+phrases[1]+": "+str(res2["result_count"])+" - "+winner+" FTW!", args)
 
     def cWindchill(this, args):
@@ -1232,13 +1148,7 @@ class Commands(object):
                     this.respond(e.__repr__(), args)
                     return
                 this.respond("nothing is wrong with that command",args)
-            # else:
-                # this.cPassthrough(args, "what")
-        # else:
-            # this.cPassthrough(args, "what")
 
-#    def cWhen(this, args):
-#        this.respond(this.sinBot.whenList[random.randrange(len(this.sinBot.whenList))], args)
 
     def cIdentify(this, args):
         """Syntax: 'identify <ipaddress>' - reverse-lookup's the IRC nickname of the person using an IP address"""
@@ -1412,14 +1322,15 @@ class Commands(object):
                         curIsm = curIsm + " " + tag[1].strip()
 
     def getUrban(this, word):
-        if word.__class__ == [].__class__:
-            word = "%20".join(word)
+        word = urllib.quote(word)
+        print "Urban: " + word
         tags = this.getPage("http://www.urbandictionary.com/define.php?term="+word).replace("\n"," ").replace("\r","").split("<")
         inDef = False
         retVal = ""
         for tag in tags:
             tag = tag.split(">")
             if tag[0].startswith("div class='definition'"):
+                print tag
                 retVal = tag[1]
                 inDef = True
             elif inDef:
@@ -1698,22 +1609,6 @@ class Commands(object):
                     if len(tag) > 1:
                         retVal = retVal + tag[1]
                 return retVal
-        
-#        command = 'wget http://www.etymonline.com/index.php?term='+word+' -O - | grep -e "<dd" | sed -e "s/<[^>]*>//g"'
-#        retVal = ""
-#        output = os.popen(command)
-#        lines = output.readlines()
-#        output.close()
-#        if len(lines) == 0:
-#            command = 'wget http://www.etymonline.com/index.php?search='+word+' -O - | grep -e "<dd" | sed -e "s/<[^>]*>//g"'
-#            output = os.popen(command)
-#            lines = output.readlines()
-#            output.close()
-#        if len(lines) == 0:
-#            return None
-#        retVal = lines[0]
-#        return retVal[:-1]
-
 
     def getPage(this, link):
         try:
@@ -1935,8 +1830,6 @@ class Commands(object):
         try:
             print "t7"
             for line in lines:
-#                print "t8"
-#                if line.find('style=padding:10px;>') > 0:
                 if line.find('style="padding:0.6em;"') > 0:
                     print "t9"
 #                    print "returning : ",line.split('style=padding:10px;>')[1].split('<')[0]
@@ -1958,9 +1851,7 @@ class Commands(object):
         retVal = ""
         try:
             print "t5"
-#            req = urllib2.Request('http://babelfish.altavista.com/tr?tt=urltext&doit=done&intl=1&trtext='+text+'&lp='+fromLtr+'_'+toLtr, None, headers)
             req = urllib2.Request('http://www.talklikeapirateday.com/translate/index.php', None, headers)
-            #lines = urllib2.urlopen(req,"text="+text+"&submit=Translate&debug=0").read().replace("\r","").split("\n")
             lines = this.sinBot.opener.open(req,"text="+text+"&submit=Translate&debug=0").read().replace("\r","").split("\n")
             if len(lines) == 0:
                 print "t6"
@@ -2487,7 +2378,6 @@ class Commands(object):
         this.sinBot.commandThreadMap = {}
         this.sinBot.commandMap = {}
         this.sinBot.helpMap = {}
-        #this.sinBot.proxies = {"https":"127.0.0.1:4480","http":"127.0.0.1:4480"}
         proxyHandler = urllib2.ProxyHandler(this.sinBot.proxies)
         this.sinBot.opener = urllib2.build_opener(proxyHandler)
         this.sinBot.headers = headers
@@ -2507,8 +2397,7 @@ class Commands(object):
                 doc = this.__getattribute__(x).func_doc
                 if doc != None:
                     this.sinBot.helpMap[command] = doc
-
-            
+         
         try:
             this.sinBot.weatherMap.keys()
         except:
@@ -2526,7 +2415,6 @@ class Commands(object):
         this.sinBot.weatherMap["ca"] = "KSJC"
         this.sinBot.weatherMap["wa"] = "KBFI"
         
-#        this.imdb = imdb.IMDb()
         try:
             if hasattr(this.sinBot, "parent"):
                 this.sinBot.rouletteMap = this.sinBot.parent.rouletteMap
@@ -2534,72 +2422,6 @@ class Commands(object):
             this.sinBot.rouletteMap.keys()
         except:
             this.sinBot.rouletteMap = {}
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.foodMap = this.sinBot.parent.foodMap
-                # print "LOADED PARENT!"
-            # this.sinBot.foodMap.keys()
-        # except:
-            # this.sinBot.foodMap = {}
-            # this.readFoods()
-
-#        Commands.foodMap = {}
-#        this.foodMap = Commands.foodMap
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.saidMap = this.sinBot.parent.saidMap
-                # print "LOADED PARENT!"
-            # this.sinBot.saidMap.keys()
-        # except:
-            # this.sinBot.saidMap = {}
-            # this.readYouSaid()
-#        Commands.saidMap = {}
-#        this.saidMap = Commands.saidMap
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.acronymMap = this.sinBot.parent.acronymMap
-                # print "LOADED PARENT!"
-            # this.sinBot.acronymMap.keys()
-        # except:
-            # this.sinBot.acronymMap = {}
-            # this.readAcronyms()
-#        Commands.acronymMap = {}
-#        this.acronymMap = Commands.acronymMap
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.bagOfHolding = this.sinBot.parent.bagOfHolding
-                # this.sinBot.bagOfHoldingPrep = this.sinBot.parent.bagOfHoldingPrep
-                # print "LOADED PARENT!"
-            # this.sinBot.bagOfHolding.keys()
-            # this.sinBot.bagOfHoldingPrep.keys()
-        # except:
-            # this.sinBot.bagOfHolding = {}
-            # this.sinBot.bagOfHoldingPrep = {}
-            # this.readBagOfHolding()
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.equipMap = this.sinBot.parent.equipMap
-                # print "LOADED PARENT!"
-            # this.sinBot.equipMap.keys()
-        # except:
-            # this.sinBot.equipMap = {}
-
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.selectList = this.sinBot.parent.selectList
-                # print "LOADED PARENT!"
-            # len(this.sinBot.selectList)
-        # except:
-            # this.sinBot.selectList = []
-            # this.readSelect()
-
-#        Commands.selectList = []
-#        this.selectList = Commands.selectList
 
         try:
             if hasattr(this.sinBot, "parent"):
@@ -2609,61 +2431,6 @@ class Commands(object):
         except:
             this.sinBot.bushisms = []
             this.readBushisms()
-            
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.whenList = this.sinBot.parent.whenList
-                # print "LOADED PARENT!"
-            # len(this.sinBot.whenList)
-        # except:
-            # this.sinBot.whenList = []
-            # this.readWhen()
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                # this.sinBot.h8List = this.sinBot.parent.h8List
-                # print "LOADED PARENT!"
-            # len(this.sinBot.h8List)
-        # except:
-            # this.sinBot.h8List = []
-            # this.readH8ball()
-
-        # try:
-            # if hasattr(this.sinBot, "parent"):
-                ##this.sinBot.releaseMap = this.sinBot.parent.releaseMap
-                # this.sinBot.releaseList = this.sinBot.parent.releaseList
-                # print "LOADED PARENT!"
-            # len(this.sinBot.releaseList)
-            ##this.sinBot.releaseMap.keys()
-        # except:
-            # print "creating new releaseList"
-            # this.sinBot.releaseList = []
-            ##this.sinBot.releaseMap = {}
-            # this.readRelease()
-
-        # if hasattr(this.sinBot, "parent"):
-            # this.sinBot.phonemeMap = this.sinBot.parent.phonemeMap
-            # print "LOADED PARENT!"
-        # else:
-            # this.sinBot.phonemeMap = phonemeMap
-
-        #try:
-        #    if hasattr(this.sinBot, "parent"):
-        #        this.sinBot.envowelMap = this.sinBot.parent.envowelMap
-        #        print "LOADED PARENT!"
-        #    this.sinBot.envowelMap.keys()
-        #except:
-        #    print "ENVOWEL MAP FAILED TO LOAD"
-            # this.sinBot.envowelMap = {}
-            # print "ADDING KEYS"
-            # for x in this.sinBot.phonemeMap.wordToPhoneme.keys():
-                # x = x.lower()
-                # short = x.replace('a','').replace('e','').replace('i','').replace('o','').replace('u','').replace('y','').replace('A','').replace('E','').replace('I','').replace('O','').replace('U','').replace('Y','')
-                # try:
-                    # this.sinBot.envowelMap[short].append(x)
-                # except:
-                    # this.sinBot.envowelMap[short] = [x]
-
 
         try:
             this.sinBot.icaoMap.keys()
