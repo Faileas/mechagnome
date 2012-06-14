@@ -94,18 +94,18 @@ class Actions:
             time.sleep(2)
             this.sinBot.actions.execcommand('PRIVMSG '+info[2]+" :Here's to rebooting nc82! *GULP*",[])
 
-    def sendYouTubeTitle(this, link, chan):
+    def sendURLTitle(this, link, chan):
         print "Title: ",this.getTitle(link)
         print "Unescaped: ",unescape(this.getTitle(link))
         this.sinBot.actions.execcommand('PRIVMSG '+chan+" :"+unescape(this.getTitle(link)),[])
 
-    def parseYouTube(this, complete, info, msgpart, sender):
+    def parseURL(this, complete, info, msgpart, sender):
         p = "((http[s]?)://)?(www|m)?\.?(youtu(\.be|be\.com))/"
         for x in complete[1].split():
             result = re.match(p,x)
             if not result is None:
                 print result.group(0)
-                thread.start_new_thread(this.sendYouTubeTitle,(x[x.find(result.group(0)):],info[2]))
+                thread.start_new_thread(this.sendURLTitle,(x[x.find(result.group(0)):],info[2]))
     
     def blizzAlerts(this, complete=None, info=None, msgpart=None, sender=None, force=False):
         currentTime = time.time()
@@ -468,8 +468,8 @@ class Actions:
         msgpart=complete[1]
         sender=info[0].split('!')
 
-        this.parseYouTube(complete, info, msgpart, sender)
-        this.blizzAlerts(complete, info, msgpart, sender)
+        this.parseURL(complete, info, msgpart, sender)
+        #this.blizzAlerts(complete, info, msgpart, sender)
         this.googlyEyes(complete, info, msgpart, sender)
         this.botFight(complete, info, msgpart, sender)
         this.botLove(complete, info, msgpart, sender)
@@ -754,7 +754,7 @@ class Actions:
         #heh, time to make this action as stable as possible, since if I break this sinBot dies.
         print "Sending pong at "+time.ctime()
         this.sinBot.s.send('PONG '+line[1]+'\n')
-        this.blizzAlerts()
+        #this.blizzAlerts()
         if this.sinBot.currentNick != this.sinBot.NICK:
             ghost = 'PRIVMSG NickServ :GHOST '+this.sinBot.NICK+' mechanopants'
             print ghost

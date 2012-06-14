@@ -713,11 +713,11 @@ class Commands(object):
 
     def cAlert(this, args):
         """Syntax: 'alert' - gives the current WoW status alert if one exists. See http://launcher.worldofwarcraft.com/alert"""
-        this.sinBot.actions.wowAlerts(force=True)
-        if this.sinBot.actions.wowAlertsMessage == "":
+        this.sinBot.actions.blizzAlerts(force=True)
+        if this.sinBot.actions.blizzAlertsMessage == "":
             this.respond("There is no alert message currently.", args.copy())
         else:
-            alertMsg = this.sinBot.actions.alertMsg(this.sinBot.actions.wowAlertsMessage)
+            alertMsg = this.sinBot.actions.alertMsg(this.sinBot.actions.blizzAlertsMessage)
             this.respond(alertMsg, args.copy())
             if len(alertMsg) > 400:
                 this.respond("See http://launcher.worldofwarcraft.com/alert for the full message.", args.copy())

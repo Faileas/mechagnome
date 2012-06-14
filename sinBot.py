@@ -283,7 +283,6 @@ class sinBot:
 			self.commands = Commands(self)
 			if hasattr(self, "child") and self.child != None:
 				self.child.reLoad()
-			self.actions.wowAlerts()
 		except Exception,e:
 			print "Caught an exception in reLoad(): ",e
 
