@@ -1,4 +1,4 @@
 #!/usr/bin/python
 from sinBot import sinBot
 
-sinBot("#syrae-bot","mechaGnome","irc.freenode.net").run()
+sinBot("#syrae-bot","mechaTest","irc.freenode.net").run()

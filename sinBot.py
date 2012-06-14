@@ -13,7 +13,7 @@ from Actions import *
 ############################################################
 # sinBot: threaded IRC bot
 # Author: Mike Boyd - mboyd@hp.com
-# Ninja'd: marinna@divinedragon.org
+# Ninja'd: marinna@gmail.com
 # Date: May 25, 2007
 #
 # This bot has 4 classes (so far), the sinBot class, the 
