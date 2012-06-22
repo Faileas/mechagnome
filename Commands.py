@@ -241,11 +241,19 @@ class Commands(object):
                 print "\nERROR: To use the GeoIP features, please download the GeoLiteCity database from http://www.maxmind.com/app/geolite and place it at GeoIP/GeoLiteCity.dat\n"
                 raise
         geoip = this.sinBot.geoip
-        gir = geoip.record_by_name(address)
-        return gir        
+    
+        try:
+            gir = geoip.record_by_name(address)
+            return gir
+        except:
+            print "Could not get record_by_name(%s)" % address
+        return None   
 
     # takes a GeoIP result from geoLocate()
     def prettyGeoLocate(this, gir):
+        def isBlank(key):
+            return not gir.has_key(key) or gir[key] is None or gir[key].strip() == ""
+
         resp = None
         longresp = ""
         for key in gir.keys():
@@ -253,23 +261,28 @@ class Commands(object):
         print longresp[:-2]
 
         resp = None
-        if gir["city"] is not None:
+        if not isBlank("city"):
             resp = gir["city"]
-        if gir["region_name"] is not None and gir["region_name"] != gir["city"]:
-            if resp is not None:
-                resp = resp + ", " + gir["region_name"]
-            #else:
-            #    resp = gir["region_name"]
-        if gir["country_name"] is not None:
+        elif not isBlank("metro_code"):
+            resp = gir["metro_code"]
+        if not isBlank("region_name"):
+            if not isBlank("city") and gir["region_name"] != gir["city"]:
+                if resp is not None:
+                    resp = resp + ", " + gir["region_name"]
+                else:
+                    resp = gir["region_name"]
+            else:
+                resp = gir["region_name"]
+        if not isBlank("country_name"):
             if resp is not None:
                 resp = resp + ", " + gir["country_name"]
-            #else:
-            #    resp = gir["country_code"]
-        if gir["postal_code"] is not None:
-            if resp is None:
-                resp = str(gir["postal_code"])
             else:
+                resp = gir["country_name"]
+        if not isBlank("postal_code"):
+            if resp is not None:
                 resp = resp + " " + str(gir["postal_code"])
+            else:
+                resp = str(gir["postal_code"])
         if resp is None:
             resp = longresp
         return resp
