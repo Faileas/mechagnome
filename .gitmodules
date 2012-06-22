@@ -1,3 +1,0 @@
-[submodule "pygeoip"]
-	path = pygeoip
-	url = https://github.com/appliedsec/pygeoip.git
