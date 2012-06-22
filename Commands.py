@@ -9,6 +9,7 @@ import htmllib
 import time
 import thread
 import urllib2
+import urllib # For parsing
 try:
     from bs4 import BeautifulSoup
 except:
@@ -1051,9 +1052,10 @@ class Commands(object):
         """Syntax: 'urban <word or phrase>' - get the urban dictionary definition of a word or phrase #KEYWORDS define definition meaning look up urban urbandictionary"""
         try:
             dfn = this.getUrban(args[3:])
-            this.respond("(urbandictionary): "+htmldecode(dfn),args)
+            this.respond("(urbandictionary): "+dfn, args)
         except:
             this.respond('couldn\'t find a definition for \''+" ".join(args[3:])+'\' on urbandictionary.com',args)
+            raise
             
     def tDefine(this, args):
         """Syntax: 'define <word> ' - find the definition of a word using m-w.com, and failing over to wiktionary.org #KEYWORDS define definition meaning look up"""
@@ -1117,7 +1119,6 @@ class Commands(object):
             print e
             this.respond('couldn\'t find stock info for \''+args[3]+'\'',args)
 
-
     def cWhat(this, args):
         if args[3].lower() == "is" and args[4].lower() == "wrong" and args[5].lower() == "with":
             if "c"+args[6][0].upper()+args[6][1:].lower() in dir(this):
@@ -1134,7 +1135,6 @@ class Commands(object):
                     this.respond(e.__repr__(), args)
                     return
                 this.respond("nothing is wrong with that command",args)
-
 
     def cIdentify(this, args):
         """Syntax: 'identify <ipaddress>' - reverse-lookup's the IRC nickname of the person using an IP address"""
@@ -1162,7 +1162,6 @@ class Commands(object):
         this.sinBot.parent.restart()
         thread.start_new_thread(this.sinBot.parent.run,("test","test2"))
 
-
     def cRestartchild(this, args):
         if len(args) >= 4:
             print "setting nick to "+args[3]
@@ -1181,6 +1180,7 @@ class Commands(object):
             except:
                 response += word+" "
         this.respond(response.strip(),args)
+        
     def cBushism(this, args):
         """Syntax: 'bushism' - returns a bushism"""
         bushisms = this.getRootSinBot().bushisms[:]
@@ -1308,24 +1308,11 @@ class Commands(object):
                         curIsm = curIsm + " " + tag[1].strip()
 
     def getUrban(this, word):
-        word = urllib.quote(word)
-        print "Urban: " + word
-        
-        
-        tags = this.getPage("http://www.urbandictionary.com/define.php?term="+word).replace("\n"," ").replace("\r","").split("<")
-        inDef = False
-        retVal = ""
-        for tag in tags:
-            tag = tag.split(">")
-            if tag[0].startswith("div class='definition'"):
-                print tag
-                retVal = tag[1]
-                inDef = True
-            elif inDef:
-                if tag[0].startswith("/div"):
-                    return retVal
-                elif len(tag) > 1:
-                    retVal += tag[1]
+        word = urllib.quote(" ".join(word))
+        print "Retrieving http://www.urbandictionary.com/define.php?term="+word
+        soup = BeautifulSoup(this.getPage("http://www.urbandictionary.com/define.php?term="+word))
+        retVal = soup.find(attrs={"class":"definition"}).text
+        return retVal
 
     def getAcronym(this, acronym):
         req = urllib2.Request('http://www.acronymfinder.com/~/search/af.aspx?Acronym='+acronym+'&string=exact&Find=find', None, headers)
