@@ -15,7 +15,7 @@ except:
     print "mechaGnome requires BeautifulSoup 4.+"
     raise
 try:
-    import GeoIP
+     import pygeoip
 except:
     pass
 from Actions import Message
@@ -102,24 +102,6 @@ class Commands(object):
         line = output.readline().strip()
         output.close()
         this.respond(line,args)
-
-    def cWall(this, args):
-        """Syntax: 'wall <phrase>' - send out <phrase> along with the name of every member in the channel"""
-        chan = args[2]
-        msg = ">>>> "+" ".join(args[3:])+" <<<<"
-        this.sinBot.lockDict['userList'].acquire()
-        try:
-            print "userList: ",this.sinBot.userList
-            for user in this.sinBot.userList[chan]:
-                if user[0] == "@":
-                    msg = user[1:]+" "+msg
-                else:
-                    msg = user+" "+msg
-        except:
-            pass
-        this.sinBot.lockDict['userList'].release()
-        this.respond(msg,args)
-#        this.sinBot.actions.execcommand('PRIVMSG '+chan+' :'+msg,args)
 
     def cTell(this, args):
         #"""Syntax: 'tell <nick/channel> <message> - sends the message to the channel or nick."""
@@ -249,7 +231,11 @@ class Commands(object):
 
     def geoLocate(this, address):
         if not hasattr(this.sinBot, "geoip") or this.sinBot.geoip is None:
-            this.sinBot.geoip = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat",GeoIP.GEOIP_STANDARD)
+            try:
+                this.sinBot.geoip = pygeoip.GeoIP("GeoIP/GeoLiteCity.dat",pygeoip.STANDARD)
+            except IOError:
+                print "\nERROR: To use the GeoIP features, please download the GeoLiteCity database from http://www.maxmind.com/app/geolite and place it at GeoIP/GeoLiteCity.dat\n"
+                raise
         geoip = this.sinBot.geoip
         gir = geoip.record_by_name(address)
         return gir        
@@ -1324,6 +1310,8 @@ class Commands(object):
     def getUrban(this, word):
         word = urllib.quote(word)
         print "Urban: " + word
+        
+        
         tags = this.getPage("http://www.urbandictionary.com/define.php?term="+word).replace("\n"," ").replace("\r","").split("<")
         inDef = False
         retVal = ""

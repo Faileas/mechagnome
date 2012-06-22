@@ -1,1 +1,3 @@
 *.pyc
+GeoIP
+GeoLiteCity.dat

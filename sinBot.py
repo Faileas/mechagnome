@@ -147,8 +147,8 @@ class sinBot:
 		self.startTime = time.localtime()
 		self.RUN = True
 
-
 		self.lockDict = {'userList':self.userListLock, 'requestedOpIn':self.requestedOpInLock}
+		
 	def run(self, info="", info2=""):
 		joinBuffer = []
 		while self.RUN:
