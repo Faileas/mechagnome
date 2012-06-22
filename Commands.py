@@ -9,6 +9,9 @@ import htmllib
 import time
 import thread
 import urllib2
+
+sys.path.append('lib')
+
 try:
     from bs4 import BeautifulSoup
 except:
