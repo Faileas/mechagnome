@@ -10,6 +10,8 @@ import time
 from Commands import *
 from Actions import *
 
+sys.path.append('lib')
+
 ############################################################
 # sinBot: threaded IRC bot
 # Author: Mike Boyd - mboyd@hp.com
